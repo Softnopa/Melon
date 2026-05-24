@@ -1,0 +1,99 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  OWNER
+  WORKER
+}
+
+enum ActivityType {
+  CREATE
+  EDIT
+  PAYMENT
+}
+
+enum Currency {
+  UZS
+  USD
+}
+
+model Organization {
+  id         String     @id @default(cuid())
+  name       String
+  inviteCode String     @unique @default(cuid())
+  createdAt  DateTime   @default(now())
+  users      User[]
+  customers  Customer[]
+  activities Activity[]
+}
+
+model User {
+  id             String       @id @default(cuid())
+  supabaseId     String       @unique
+  email          String       @unique
+  name           String
+  role           Role         @default(WORKER)
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now())
+  activities     Activity[]
+
+  @@index([organizationId])
+}
+
+model Customer {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  name           String
+  melonAmount    Float
+  totalCost      Float
+  paidAmount     Float
+  remainingDebt  Float
+  purchaseCost   Float        @default(0)
+  currency       Currency
+  dueDate        DateTime?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  activities     Activity[]
+
+  @@index([organizationId])
+  @@index([dueDate])
+}
+
+model Activity {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  customerId     String
+  customer       Customer     @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  customerName   String
+  type           ActivityType
+  description    String
+  amount         Float?
+  currency       Currency
+  userId         String?
+  user           User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userName       String?
+  createdAt      DateTime     @default(now())
+
+  @@index([organizationId, createdAt])
+}
+
+model LoginAttempt {
+  ip        String   @id
+  count     Int      @default(0)
+  updatedAt DateTime @updatedAt
+}
+
+model BannedIp {
+  ip       String   @id
+  reason   String
+  bannedAt DateTime @default(now())
+}
