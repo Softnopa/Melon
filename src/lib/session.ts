@@ -54,7 +54,7 @@ export async function getSession(): Promise<SessionPayload | null> {
 
   if (!user) return null;
 
-  const profile = await prisma.user.findUnique({
+  const profile = await prisma.User.findUnique({
     where: { supabaseId: user.id },
     include: { organization: true },
   });

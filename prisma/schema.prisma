@@ -2,10 +2,23 @@ generator client {
   provider = "prisma-client-js"
 }
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  password  String
-  createdAt DateTime @default(now())
+  id             String         @id @default(uuid())
+  supabaseId     String?        @unique
+  email          String         @unique
+  password       String?
+  name           String?
+  role           String         @default("WORKER")
+  organizationId String?
+  organization   organization?  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdAt      DateTime       @default(now())
+}
+
+model organization {
+  id         String   @id @default(uuid())
+  name       String
+  inviteCode String?  @unique
+  users      User[]
+  createdAt  DateTime @default(now())
 }
 
 datasource db {

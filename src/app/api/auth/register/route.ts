@@ -40,7 +40,7 @@ export async function POST(request: Request) {
   const { name, email, password, organizationName, inviteCode } = parsed.data;
   const normalized = email.toLowerCase();
 
-  const existing = await prisma.user.findUnique({ where: { email: normalized } });
+  const existing = await prisma.User.findUnique({ where: { email: normalized } });
   if (existing) {
     return NextResponse.json({ error: "Email already registered" }, { status: 409 });
   }
@@ -91,7 +91,7 @@ export async function POST(request: Request) {
       role = "OWNER";
     }
 
-    const user = await prisma.user.create({
+    const user = await prisma.User.create({
       data: {
         supabaseId,
         name: name.trim(),
